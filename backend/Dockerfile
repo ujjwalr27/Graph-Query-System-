@@ -12,7 +12,8 @@ COPY . .
 # Create data directory
 RUN mkdir -p /app/data
 
-EXPOSE 8000
+# PORT is injected by Railway (defaults to 8000 for local Docker Compose)
+EXPOSE ${PORT:-8000}
 
-# Use uvicorn for production (single worker for SQLite thread safety)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Shell form so $PORT is expanded at runtime
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --timeout-keep-alive 300

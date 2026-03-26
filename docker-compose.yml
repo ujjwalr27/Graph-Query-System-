@@ -29,6 +29,9 @@ services:
     container_name: dodgeai-frontend
     ports:
       - "80:80"
+    environment:
+      - PORT=80
+      - BACKEND_URL=http://backend:8000
     depends_on:
       backend:
         condition: service_healthy
