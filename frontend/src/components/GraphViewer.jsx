@@ -58,6 +58,14 @@ export default function GraphViewer({
 }) {
   const graphRef = useRef()
 
+  // Use refs for values that change without needing to restart the force simulation
+  const clusterModeRef = useRef(clusterMode)
+  const clusterDataRef = useRef(clusterData)
+  const highlightedRef = useRef(highlightedNodes)
+  useEffect(() => { clusterModeRef.current = clusterMode }, [clusterMode])
+  useEffect(() => { clusterDataRef.current = clusterData }, [clusterData])
+  useEffect(() => { highlightedRef.current = highlightedNodes }, [highlightedNodes])
+
   useEffect(() => {
     if (graphRef.current) {
       setTimeout(() => {
@@ -65,6 +73,13 @@ export default function GraphViewer({
       }, 500)
     }
   }, [graphData])
+
+  // Force re-paint when cluster/highlight state changes (without restarting simulation)
+  useEffect(() => {
+    if (graphRef.current) {
+      graphRef.current.refresh()
+    }
+  }, [clusterMode, clusterData, highlightedNodes])
 
   const handleNodeClick = useCallback(
     (node) => {
@@ -80,15 +95,16 @@ export default function GraphViewer({
     [onExpandNode]
   )
 
+  // Stable callback — reads from refs so it never changes identity
   const nodeCanvasObject = useCallback(
     (node, ctx, globalScale) => {
-      const isHighlighted = highlightedNodes?.has(node.id)
+      const isHighlighted = highlightedRef.current?.has(node.id)
       const baseR = isHighlighted ? 3.5 : 2.5
       const r = Math.max(baseR / Math.sqrt(globalScale), 1.5)
 
       // Color: cluster mode uses cluster color, otherwise entity type color
-      const color = clusterMode
-        ? getClusterColor(clusterData?.[node.id])
+      const color = clusterModeRef.current
+        ? getClusterColor(clusterDataRef.current?.[node.id])
         : getNodeColor(node.type)
 
       // Outer glow for highlighted nodes
@@ -121,7 +137,7 @@ export default function GraphViewer({
         ctx.fillText(String(label).substring(0, 20), node.x, node.y + r + 1.5)
       }
     },
-    [highlightedNodes, clusterMode, clusterData]
+    [] // empty deps — reads from refs, so identity is stable
   )
 
   const linkCanvasObject = useCallback((link, ctx, globalScale) => {
