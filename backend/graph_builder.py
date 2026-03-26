@@ -178,6 +178,7 @@ def _run_community_detection(G: nx.DiGraph) -> None:
             "dominant_type": dominant_type,
             "type_breakdown": dict(type_counts),
             "label": f"Cluster {cluster_id} ({dominant_type})",
+            "nodes": [str(n) for n in members if n in G.nodes],
         })
 
     _clusters_cache = cluster_summary
