@@ -74,12 +74,8 @@ export default function GraphViewer({
     }
   }, [graphData])
 
-  // Force re-paint when cluster/highlight state changes (without restarting simulation)
-  useEffect(() => {
-    if (graphRef.current) {
-      graphRef.current.refresh()
-    }
-  }, [clusterMode, clusterData, highlightedNodes])
+  // react-force-graph repaints continuously on every animation frame,
+  // so changing refs is sufficient — no explicit refresh needed
 
   const handleNodeClick = useCallback(
     (node) => {
